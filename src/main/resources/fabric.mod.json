@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "chum",
+  "version": "${version}",
+  "name": "chum dev",
+  "description": "A simple addon for Meteor Client addons.",
+  "authors": [
+    "seasnail"
+  ],
+  "contact": {
+    "repo": "https://github.com/MeteorDevelopment/chum"
+  },
+  "icon": "assets/chum/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "com.chum.addon.ChumAddon"
+    ]
+  },
+  "mixins": [
+    "chum.mixins.json"
+  ],
+  "custom": {
+    "meteor-client:color": "225,25,25"
+  },
+  "depends": {
+    "java": ">=21",
+    "minecraft": ["${mc_version}"],
+    "meteor-client": "*"
+  }
+}
