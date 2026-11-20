@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "chum",
   "version": "${version}",
-  "name": "chum dev",
+  "name": "Chum Dev",
   "description": "A simple addon for Meteor Client addons.",
   "authors": [
     "seasnail"
@@ -21,7 +21,7 @@
     "chum.mixins.json"
   ],
   "custom": {
-    "meteor-client:color": "225,25,25"
+    "meteor-client:color": "0,255,255"
   },
   "depends": {
     "java": ">=21",

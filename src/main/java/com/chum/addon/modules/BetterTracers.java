@@ -1,331 +1,230 @@
+//---*NOTE*--->SLIT IN TWO-->THIS IS P1----*\\
+// ---*P2 OF THIS MODULE-JAR FILE =TracerGroup (module)*---\\
+
+
+
 package com.chum.addon.modules;
 
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
-import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.render.color.Color;
+import meteordevelopment.meteorclient.utils.Utils;
+import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.block.Block;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.BlockPos;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+
+
 public class BetterTracers extends Module {
-    private final SettingGroup sgGroupA = settings.createGroup("Group Alpha");
-    private final SettingGroup sgGroupB = settings.createGroup("Group Beta");
-    private final SettingGroup sgGroupC = settings.createGroup("Group Gamma");
-    //note= switch Beta & Signa spots... Alpha,Sigma,Beta
-
-    //note= 4 new groups.....//
-
-    private final SettingGroup sgGroupD = settings.createGroup("Group Delta");
-    private final SettingGroup sgGroupE = settings.createGroup("Group Sigma");
-
-    private final SettingGroup sgGroupF = settings.createGroup("Group Zeta");
-    private final SettingGroup sgGroupG = settings.createGroup("Group Omega");
-
-    //end of 4 new groups....//
+    private final List<TracerGroup> groups = new ArrayList<>();
+    private final List<CachedBlock> cachedBlocks = new ArrayList<>();
+    private int scanTimer = 0;
 
 
-    // --- Group Alpha Settings ---\\
-    private final Setting<Set<EntityType<?>>> groupAEntities = sgGroupA.add(new EntityTypeListSetting.Builder()
-        .name("entities-alpha")
-        .description("Entities that will use the Alpha tracer color.")
-        .defaultValue()
-        .build());
-
-    private final Setting<SettingColor> GroupAlpha = sgGroupA.add(new ColorSetting.Builder()
-        .name("Group-Alpha")
-        .description("Tracer color for Alpha group entities.")
-        .defaultValue(new SettingColor(125, 125, 125, 255))
-        .build());
-
-    public final Setting<Boolean> alphaEnabled = sgGroupA.add(new BoolSetting.Builder()
-        .name("Enabled")
-        .description("Enables tracers for the Alpha group.")
-        .defaultValue(false)
-        .build());
-    // --- END ALPHA SETTINGS ---//
-
-    // --- Group Beta Settings ---\\
-    private final Setting<Set<EntityType<?>>> groupBEntities = sgGroupB.add(new EntityTypeListSetting.Builder()
-        .name("entities-beta")
-        .description("Entities that will use the Beta tracer color.")
-        .defaultValue()
-        .build());
-
-    private final Setting<SettingColor> GroupBeta = sgGroupB.add(new ColorSetting.Builder()
-        .name("Group-Beta")
-        .description("Tracer color for Beta group entities.")
-        .defaultValue(new SettingColor(255, 0, 0, 255))
-        .build());
-
-    public final Setting<Boolean> betaEnabled = sgGroupB.add(new BoolSetting.Builder()
-        .name("enabled")
-        .description("Enables tracers for the Beta group.")
-        .defaultValue(false)
-        .build());
-    // --- END BETA SETTINGS ---//
-
-    // --- GAMMA GROUP SETTINGS --- \\
-    private final Setting<Set<EntityType<?>>> groupCEntities = sgGroupC.add(new EntityTypeListSetting.Builder()
-        .name("entities-delta")
-        .description("Entities that will use the Delta tracer color.")
-        .defaultValue()
-        .build());
-
-    private final Setting<SettingColor> GroupGamma = sgGroupC.add(new ColorSetting.Builder()
-        .name("Group-Gamma")
-        .description("Tracer color for Beta group entities.")
-        .defaultValue(new SettingColor(85, 255, 85, 255))
-        .build());
-
-    public final Setting<Boolean> GammaEnabled = sgGroupC.add(new BoolSetting.Builder()
-        .name("enabled")
-        .description("Enables tracers for the Gamma group.")
-        .defaultValue(false)
-        .build());
-    // --- END GAMMA SETTINGS ---//
-
-
-
-    //4 new groups...//
-
-
-    // --- DELTA GROUP SETTINGS ---\\
-    private final Setting<Set<EntityType<?>>> groupDEntities = sgGroupD.add(new EntityTypeListSetting.Builder()
-        .name("entities-delta")
-        .description("Entities that will use the Delta tracer color.")
-        .defaultValue()
-        .build());
-
-    private final Setting<SettingColor> GroupDelta = sgGroupD.add(new ColorSetting.Builder()
-        .name("Group-Delta")
-        .description("Tracer color for Delta group entities.")
-        .defaultValue(new SettingColor(150, 75, 0, 255))
-        .build());
-
-    public final Setting<Boolean> DeltaEnabled = sgGroupD.add(new BoolSetting.Builder()
-        .name("enabled")
-        .description("Enables tracers for the Beta group.")
-        .defaultValue(false)
-        .build());
-    // --- END DELTA SETTINGS ---//
-
-    // --- Group Sigma Settings ---\\
-    private final Setting<Set<EntityType<?>>> groupEEntities = sgGroupE.add(new EntityTypeListSetting.Builder()
-        .name("entities-sigma")
-        .description("Entities that will use the Beta tracer color.")
-        .defaultValue()
-        .build());
-
-    private final Setting<SettingColor> GroupSigma = sgGroupE.add(new ColorSetting.Builder()
-        .name("Group-Sigma")
-        .description("Tracer color for Beta group entities.")
-        .defaultValue(new SettingColor(0, 0, 0, 255))
-        .build());
-
-    public final Setting<Boolean> SigmaEnabled = sgGroupE.add(new BoolSetting.Builder()
-        .name("enabled")
-        .description("Enables tracers for the Beta group.")
-        .defaultValue(false)
-        .build());
-    // --- END SIGMA SETTINGS ---//
-
-
-
-    // --- ZETA GROUP SETTINGS ---\\
-    private final Setting<Set<EntityType<?>>> groupFEntities = sgGroupF.add(new EntityTypeListSetting.Builder()
-        .name("entities-zeta")
-        .description("Entities that will use the Zeta tracer color.")
-        .defaultValue()
-        .build());
-
-    private final Setting<SettingColor> GroupZeta = sgGroupF.add(new ColorSetting.Builder()
-        .name("Group-Zeta")
-        .description("Tracer color for Zeta group entities.")
-        .defaultValue(new SettingColor(0, 255, 255, 255))
-        .build());
-
-    public final Setting<Boolean> ZetaEnabled = sgGroupF.add(new BoolSetting.Builder()
-        .name("enabled")
-        .description("Enables tracers for the Zetta group.")
-        .defaultValue(false)
-        .build());
-    // --- END ZETA SETTINGS ---//
-
-    // --- OMEGA GROUP SETTINGS ---\\
-    private final Setting<Set<EntityType<?>>> groupGEntities = sgGroupG.add(new EntityTypeListSetting.Builder()
-        .name("entities-omega")
-        .description("Entities that will use the Omega tracer color.")
-        .defaultValue()
-        .build());
-
-    private final Setting<SettingColor> GroupOmega = sgGroupG.add(new ColorSetting.Builder()
-        .name("Group-omega")
-        .description("Tracer color for Omega group entities.")
-        .defaultValue(new SettingColor(255, 170, 0, 255))
-        .build());
-
-    public final Setting<Boolean> OmegaEnabled = sgGroupG.add(new BoolSetting.Builder()
-        .name("enabled")
-        .description("Enables tracers for the Omega group.")
-        .defaultValue(false)
-        .build());
-    // --- END OMEGA SETTINGS ---//
-
-    //end of 4 new groups//
-
-
-    //MY MODULE NAME...
     public BetterTracers(Category category) {
-        // Name, description, and category shown in the click GUI
-        super(category, "BetterTracers", "A better set of lines module.");
+        super(category, "BetterTracers", "A highly configurable group-based tracers module.");
+
+        groups.add(new TracerGroup(settings, "Group Alpha", new SettingColor(125, 125, 125, 255)));
+        groups.add(new TracerGroup(settings, "Group Beta", new SettingColor(255, 0, 0, 255)));
+        groups.add(new TracerGroup(settings, "Group Gamma", new SettingColor(85, 255, 85, 255)));
+        groups.add(new TracerGroup(settings, "Group Delta", new SettingColor(153, 75, 0, 255)));
+        groups.add(new TracerGroup(settings, "Group Sigma", new SettingColor(0, 0, 0, 255)));
+        groups.add(new TracerGroup(settings, "Group Zeta", new SettingColor(0, 255, 255, 255)));
+        groups.add(new TracerGroup(settings, "Group Omega", new SettingColor(255, 170, 0, 255)));
     }
 
+    @Override
+    public void onActivate() {
+        cachedBlocks.clear();
+        scanTimer = 0;
+    }
+
+    @Override
+    public void onDeactivate() {
+        cachedBlocks.clear();
+    }
+
+    @EventHandler
+    private void onTick(TickEvent.Post event) {
+        if (mc.world == null || mc.player == null) return;
+
+        if (scanTimer > 0) {
+            scanTimer--;
+            return;
+        }
+        scanTimer = 20;
+
+        cachedBlocks.clear();
+
+        Set<Block> targetBlocks = new HashSet<>();
+        int maxRadius = 0;
+
+        for (TracerGroup group : groups) {
+            if (group.enabled.get() && !group.blocks.get().isEmpty()) {
+                targetBlocks.addAll(group.blocks.get());
+                int r = (int) Math.min(48, Math.ceil(group.distance.get()));
+                if (r > maxRadius) maxRadius = r;
+            }
+        }
+
+        if (targetBlocks.isEmpty() || maxRadius <= 0) return;
+
+        BlockPos playerPos = mc.player.getBlockPos();
+        BlockPos.Mutable pos = new BlockPos.Mutable();
+
+        int minX = playerPos.getX() - maxRadius;
+        int maxX = playerPos.getX() + maxRadius;
+        int minY = Math.max(mc.world.getBottomY(), playerPos.getY() - maxRadius);
+        int maxY = Math.min(mc.world.getTopYInclusive(), playerPos.getY() + maxRadius);
+        int minZ = playerPos.getZ() - maxRadius;
+        int maxZ = playerPos.getZ() + maxRadius;
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    pos.set(x, y, z);
+                    Block block = mc.world.getBlockState(pos).getBlock();
+
+                    if (!targetBlocks.contains(block)) continue;
+
+                    double distSq = mc.player.squaredDistanceTo(x + 0.5, y + 0.5, z + 0.5);
+                    for (TracerGroup group : groups) {
+                        if (group.isValidBlock(block, distSq)) {
+                            cachedBlocks.add(new CachedBlock(x + 0.5, y + 0.5, z + 0.5, group));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @EventHandler
     private void onRender3D(Render3DEvent event) {
+        if (mc.world == null || mc.player == null) return;
+
         for (Entity entity : mc.world.getEntities()) {
             if (entity == mc.player) continue;
+            double distSq = mc.player.squaredDistanceTo(entity);
 
+            for (TracerGroup group : groups) {
+                if (!group.isValidEntity(entity, distSq)) continue;
 
-            //injected from here
+                double tx = entity.lastRenderX + (entity.getX() - entity.lastRenderX) * event.tickDelta;
+                double ty = entity.lastRenderY + (entity.getY() - entity.lastRenderY) * event.tickDelta + (entity.getStandingEyeHeight() / 2);
+                double tz = entity.lastRenderZ + (entity.getZ() - entity.lastRenderZ) * event.tickDelta;
 
-            // --- ALPHA GROUP LOGIC ---\\
-            // Checks if Alpha button is ON AND if the entity is selected in Alpha's whitelist
-            if (!alphaEnabled.get() && groupAEntities.get().contains(entity.getType())) {
-                drawTracerLine(event, entity, Color.GRAY); // Change Color.GRAY to your preferred Alpha color
-                continue; // Move to the next entity so we don't draw overlapping lines
+                drawTracer(event, tx, ty, tz, group.color.get(), group.thickness.get());
+                break;
             }
-            // --- END ALPHA GROUP LOGIC ---\\
+        }
 
-            // --- BETA GROUP LOGIC ---     ->switch with sigma group<-\\
-            // Checks if Beta button is ON AND if the entity is selected in Beta's whitelist
-            if (!betaEnabled.get() && groupBEntities.get().contains(entity.getType())) {
-                drawTracerLine(event, entity, Color.RED); // Change Color.RED to your preferred Beta color
-                continue; // Move to the next entity so we don't draw overlapping lines
+        boolean anyStorageActive = false;
+        for (TracerGroup group : groups) {
+            if (group.enabled.get() && !group.storageBlocks.get().isEmpty()) {
+                anyStorageActive = true;
+                break;
             }
-            // --- END BETA GROUP LOGIC ---\\
+        }
 
-            // --- GAMMA GROUP LOGIC ---\\
-            // Checks if Gamma button is ON AND if the entity is selected in Gamma's whitelist
-            if (!GammaEnabled.get() && groupCEntities.get().contains(entity.getType())) {
-                drawTracerLine(event, entity, Color.GREEN); // Change Color.GREEN to your preferred Beta color
-                continue; // Move to the next entity so we don't draw overlapping lines
+        if (anyStorageActive) {
+            for (BlockEntity blockEntity : Utils.blockEntities()) {
+                BlockPos bPos = blockEntity.getPos();
+                double tx = bPos.getX() + 0.5;
+                double ty = bPos.getY() + 0.5;
+                double tz = bPos.getZ() + 0.5;
+                double distSq = mc.player.squaredDistanceTo(tx, ty, tz);
+
+                for (TracerGroup group : groups) {
+                    if (!group.isValidStorageBlock(blockEntity.getType(), distSq)) continue;
+
+                    drawTracer(event, tx, ty, tz, group.color.get(), group.thickness.get());
+                    break;
+                }
             }
-            // --- END GAMMA GROUP LOGIC ---\\
+        }
 
-            //end of injection
-
-
-            //4 new groups...//
-
-            // --- DELTA GROUP LOGIC ---\\
-            // Checks if Delta button is ON AND if the entity is selected in Delta's whitelist
-            if (!DeltaEnabled.get() && groupDEntities.get().contains(entity.getType())) {
-                drawTracerLine(event, entity, Color.CYAN); // Change Color.?Cyan? to your preferred Beta color
-                continue; // Move to the next entity so we don't draw overlapping lines
-            }
-            // --- END DELTA GROUP LOGIC ---\\
-
-            // --- SIGMA GROUP LOGIC ---     ->switch with beta group<-\\
-            // Checks if Sigma button is ON AND if the entity is selected in Beta's whitelist
-            if (!SigmaEnabled.get() && groupEEntities.get().contains(entity.getType())) {
-                drawTracerLine(event, entity, Color.BLACK); // Change Color.BLACK to your preferred Beta color
-                continue; // Move to the next entity so we don't draw overlapping lines
-            }
-            // --- END SIGMA GROUP LOGIC ---\\
-
-
-            // --- ZETA GROUP LOGIC ---\\
-            // Checks if Zeta button is ON AND if the entity is selected in Zeta's whitelist
-            if (!ZetaEnabled.get() && groupFEntities.get().contains(entity.getType())) {
-                drawTracerLine(event, entity, Color.GRAY); // Change Color.GRAY to your preferred Beta color
-                continue; // Move to the next entity so we don't draw overlapping lines
-            }
-            // --- END ZETA GROUP LOGIC ---\\
-
-            // --- OMEGA GROUP LOGIC ---\\
-            // Checks if Omega button is ON AND if the entity is selected in Omega's whitelist
-            if (!OmegaEnabled.get() && groupGEntities.get().contains(entity.getType())) {
-                drawTracerLine(event, entity, Color.YELLOW); // Change Color.YELLOW to your preferred Beta color
-                continue; // Move to the next entity so we don't draw overlapping lines
-            }
-            // --- END OMEGA GROUP LOGIC ---\\
-
-            //end of 4 new groups//
-
-
-            SettingColor color = getEntityColor(entity);
-            if (color == null) continue; // Not whitelisted in any group
-
-            // Fluid entity positioning interpolation
-            Vec3d target = new Vec3d(
-                entity.lastRenderX + (entity.getX() - entity.lastRenderX) * event.tickDelta,
-                entity.lastRenderY + (entity.getY() - entity.lastRenderY) * event.tickDelta + (entity.getStandingEyeHeight() / 2),
-                entity.lastRenderZ + (entity.getZ() - entity.lastRenderZ) * event.tickDelta
-            );
-
-            // Starting vector originating from camera/crosshair
-            Vec3d origin = new Vec3d(0, 0, 75)
-                .rotateX(-(float) Math.toRadians(mc.gameRenderer.getCamera().getPitch()))
-                .rotateY(-(float) Math.toRadians(mc.gameRenderer.getCamera().getYaw()))
-                .add(mc.gameRenderer.getCamera().getPos());
-
-
-            // Render the line
-            event.renderer.line(origin.x, origin.y, origin.z, target.x, target.y, target.z, color);
+        for (CachedBlock cached : cachedBlocks) {
+            if (!cached.group.enabled.get()) continue;
+            drawTracer(event, cached.x, cached.y, cached.z, cached.group.color.get(), cached.group.thickness.get());
         }
     }
 
 
-    //injected from here
-    // Helper method to handle the actual line rendering calculation
-    private void drawTracerLine(Render3DEvent event, Entity entity, Color color) {
-        // Calculates where the entity is located on the screen relative to the camera
-        double x = entity.prevX + (entity.getX() - entity.prevX) * event.tickDelta;
-        double y = entity.prevY + (entity.getY() - entity.prevY) * event.tickDelta;
-        double z = entity.prevZ + (entity.getZ() - entity.prevZ) * event.tickDelta;
+
+
+
+//original\\
+//    private void drawTracer(Render3DEvent event, double tx, double ty, double tz, SettingColor color, double thickness) {
+//        double ox = RenderUtils.center.x;
+//        double oy = RenderUtils.center.y;
+//        double oz = RenderUtils.center.z;
+
+//        event.renderer.line(ox, oy, oz, tx, ty, tz, color);
+
+//        int extraLines = (int) Math.round(thickness) - 1;
+//        if (extraLines <= 0) return;
+
+//        double step = 0.030;
+//        for (int i = 1; i <= extraLines; i++) {
+//            double offset = i * step;
+//            event.renderer.line(ox, oy, oz, tx + offset, ty, tz, color);
+//            event.renderer.line(ox, oy, oz, tx - offset, ty, tz, color);
+//            event.renderer.line(ox, oy, oz, tx, ty + offset, tz, color);
+//            event.renderer.line(ox, oy, oz, tx, ty - offset, tz, color);
+//        }
+//    }
+//end original\\
+
+
+
+    //added after\\
+    private void drawTracer(Render3DEvent event, double tx, double ty, double tz, SettingColor color, double thickness) {
+        double ox = RenderUtils.center.x;
+        double oy = RenderUtils.center.y;
+        double oz = RenderUtils.center.z;
+
+        // Always draw the center line
+        event.renderer.line(ox, oy, oz, tx, ty, tz, color);
+
+        if (thickness <= 1.05) return;
+
+        // Constant 4 outer lines regardless of slider value (zero FPS drop at max 10.0)
+        // Scales spread smoothly from 0.004 at thickness 2.0 up to 0.040 at thickness 10.0
+                 //----//defaults--\/1.0---\/0.0045\\-----\\new dbl-spread= 0.05) *0.0015;\\
+        double spread = (thickness - 0.05) * 0.0012;
+
+        event.renderer.line(ox, oy, oz, tx + spread, ty + spread, tz, color);
+        event.renderer.line(ox, oy, oz, tx - spread, ty - spread, tz, color);
+        event.renderer.line(ox, oy, oz, tx + spread, ty - spread, tz, color);
+        event.renderer.line(ox, oy, oz, tx - spread, ty + spread, tz, color);
     }
-    //end of injection
+//end added after\\
 
 
-    private SettingColor getEntityColor(Entity entity) {
-        EntityType<?> type = entity.getType();
 
-        // Check explicit whitelist groups
-        if (groupAEntities.get().contains(type)) {
-            return GroupAlpha.get();
+
+
+    private static class CachedBlock {
+        public final double x;
+        public final double y;
+        public final double z;
+        public final TracerGroup group;
+
+        public CachedBlock(double x, double y, double z, TracerGroup group) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.group = group;
         }
-        if (groupBEntities.get().contains(type)) {
-            return GroupBeta.get();
-        }
-        if (groupCEntities.get().contains(type)) {
-            return GroupGamma.get();
-        }
-        //note= switch beta & Sigma around...
-
-
-        //4 new groups.... //
-
-        if (groupDEntities.get().contains(type)) {
-            return GroupDelta.get();
-        }
-        if (groupEEntities.get().contains(type)) {
-            return GroupSigma.get();
-        }
-        if (groupFEntities.get().contains(type)) {
-            return GroupZeta.get();
-        }
-        if (groupGEntities.get().contains(type)) {
-            return GroupOmega.get();
-        }
-
-        //end of 4 new groups....//
-
-        return null;
     }
 }

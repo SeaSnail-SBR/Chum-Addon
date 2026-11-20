@@ -3,9 +3,14 @@
   "package": "com.chum.addon.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "ExampleMixin"
+    "BlockRenderManagerMixin",
+    "BlockColorsMixin",
+    "BlockMixin",
+    "AbstractBlockStateMixin",
+    "SectionBuilderMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   }
 }
+

@@ -1,85 +1,46 @@
-# Meteor Addon Template
+# Chum Addon
 
-A template to allow easy usage of the Meteor Addon API.
+A custom [Meteor Client](https://meteorclient.com) addon built for Minecraft **1.21.4**.
 
-### How to use
+## ✨ Features
 
-- Clone this project
-- Use this template to create new modules/commands
-- Build the executable using the gradle `build` task.
-- Run the mod with Meteor.
+### New in v0.2.1
+* **BlockDisguise**: Renders Bedrock, Ores, and more using other block textures.
+* **SlowWalkSneak**: Slows down your walking and sneaking speed.
+* **XCarry**: Allows you to store items in your crafting inventory after closing it.
 
-### Project structure
+### Existing Modules
+* **AutoCampfire**: A way to continually cook food automatically.
+* **BetterTracers**: A highly configurable group-based tracers module.
+* **WallMiner**: Digs a selectable 7x7 grid layout in front of you as you walk.
+* **WallTrail**: Builds a customizable 7x7 wall behind you as you walk.
 
-```text
-.
-│── .github
-│   ╰── workflows
-│       │── dev_build.yml
-│       ╰── pull_request.yml
-│── gradle
-│   ╰── wrapper
-│       │── gradle-wrapper.jar
-│       ╰── gradle-wrapper.properties
-│── src
-│   ╰── main
-│       │── java
-│       │   ╰── com
-│       │       ╰── example
-│       │           ╰── addon
-│       │               │── commands
-│       │               │   ╰── CommandExample
-│       │               │── hud
-│       │               │   ╰── HudExample
-│       │               │── modules
-│       │               │   ╰── ModuleExample
-│       │               ╰── AddonTemplate
-│       ╰── resources
-│           │── assets
-│           │   ╰── template
-│           │       ╰── icon.png
-│           │── addon-template.mixins.json
-│           ╰── fabric.mod.json
-│── .editorconfig
-│── .gitignore
-│── build.gradle
-│── gradle.properties
-│── gradlew
-│── gradlew.bat
-│── LICENSE
-│── README.md
-╰── settings.gradle
-```
+### HUD Elements
+* **ClockHud**: A clock just like you can craft in-game with a custom scale.
 
-This is the default project structure. Each folder/file has a specific purpose.  
-Here is a brief explanation of the ones you might need to modify:
+## 📸 Screenshots
+*(Drag and drop your screenshots here when editing on GitHub)*
+![Preview](link-to-your-screenshot.png)
 
-- `.github/workflows`: Contains the GitHub Actions configuration files.
-- `gradle`: Contains the Gradle wrapper files.  
-  Edit the `gradle.properties` file to change the version of the Gradle wrapper.
-- `src/main/java/com/chum/addon`: Contains the main class of the addon.  
-  Here you can register your custom commands, modules, and HUDs.  
-  Edit the `getPackage` method to reflect the package of your addon.
-- `src/main/resources`: Contains the resources of the addon.
-    - `assets`: Contains the assets of the addon.  
-      You can add your own assets here, separated in subfolders.
-        - `template`: Contains the assets of the template.  
-          You can replace the `icon.png` file with your own addon icon.  
-          Also, rename this folder to reflect the name of your addon.
-    - `chum.mixins.json`: Contains the Mixin configuration for the addon.  
-      You can add your own mixins in the `client` array.
-    - `fabric.mod.json`: Contains the metadata of the addon.  
-      Edit the various fields to reflect the metadata of your addon.
-- `build.gradle`: Contains the Gradle build script.  
-  You can manage the dependencies of the addon here.  
-  Remember to keep the `fabric-loom` version up-to-date.
-- `gradle.properties`: Contains the properties of the Gradle build.  
-  These will be used by the build script.
-- `LICENSE`: Contains the license of the addon.  
-  You can edit this file to change the license of your addon.
-- `README.md`: Contains the documentation of the addon.  
-  You can edit this file to reflect the documentation of your addon, and showcase its features.
+## 📥 Installation
+1. Ensure you have **Fabric Loader** and **Meteor Client** for Minecraft **1.21.4** installed.
+2. Download `chum-0.2.1.jar` from the [Releases](../../releases) tab.
+3. Drop the `.jar` file into your `.minecraft/mods` folder and launch the game.
 
-## License
+## 🛠️ Building from Source
+1. Clone this repository.
+2. Run `./gradlew build` (`gradlew build` on Windows) in the root directory.
+3. Grab the compiled `.jar` from `build/libs/`.
 
-This template is available under the CC0 license. Feel free to use it for your own projects.
+## 📝 Changelog
+### v0.2.1
+* **Added**: **BlockDisguise** (with custom block rendering & state mixins), **SlowWalkSneak**, and **XCarry**.
+* **Improved**:
+    * **BetterTracers**: Added **Distance** and **Thickness** sliders (using `TracerGroup`).
+    * **WallMiner**: Added a **Distance Ahead** slider and expanded the grid to **7x7**.
+    * **WallTrail**: Expanded the grid to **7x7**.
+* **Fixed**: Bug fixes and stability improvements for **WallMiner** and **WallTrail**.
+
+### v0.1.1
+* Initial release.
+

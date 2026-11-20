@@ -17,7 +17,7 @@ public class ClockHud extends HudElement {
     public static final HudElementInfo<ClockHud> INFO = new HudElementInfo<>(
         ChumAddon.HUD_GROUP,
         "clock-hud",
-        "A barebones HUD element with a custom scale.",
+        "A Clock just like you can craft in game with a custom scale.",
         ClockHud::new
     );
 

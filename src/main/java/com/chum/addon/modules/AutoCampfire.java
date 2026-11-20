@@ -15,12 +15,13 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-
 import java.util.Arrays;
 import java.util.List;
 
+
+
 public class AutoCampfire extends Module {
-    // 1. Define your settings
+
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
 
     private final Setting<List<Item>> selectableFood = sgGeneral.add(new ItemListSetting.Builder()
@@ -50,10 +51,11 @@ public class AutoCampfire extends Module {
 
     private int ticksPassed = 0;
 
+
     public AutoCampfire(Category category) {
-        // You can register this under Categories.Misc or Categories.Automation
-        super(category, "AutoCampfire", "A Way To Cook Food module.");
+        super(category, "AutoCampfire", "A Way To Continually Cook Food Automatically.");
     }
+
 
     @Override
     public void onActivate() {

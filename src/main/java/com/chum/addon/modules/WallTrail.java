@@ -26,15 +26,20 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-
 import java.util.Collections;
 import java.util.List;
+
+
+
 
 public class WallTrail extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgStorage = settings.createGroup("Matrix Storage");
 
-    // 1. Added the Walk Forward checkbox setting here
+
+
+
+    //-- 1. Added the Walk Forward checkbox setting here --\\
     private final Setting<Boolean> walkForward = sgGeneral.add(new BoolSetting.Builder()
         .name("walk-forward")
         .description("Automatically walk forward while this module is active.")
@@ -42,23 +47,30 @@ public class WallTrail extends Module {
         .build()
     );
 
+
+
+    //-- 2. Added a Master Over-Ride --\\
     private final BlockListSetting masterOverride = (BlockListSetting) sgGeneral.add(new BlockListSetting.Builder()
         .name("master-override")
         .description("Master block override. If empty, the module uses the individual grid settings below.")
         .defaultValue(Collections.emptyList())
         .build()
     );
+    //--- End Over-Ride ---\\
 
-    private final Setting<Boolean>[] matrixSettings = new Setting[25];
-    private final BlockListSetting[] gridBlocks = new BlockListSetting[25];
-    private final WCheckbox[] uiCheckboxCache = new WCheckbox[25];
+
+
+    private final Setting<Boolean>[] matrixSettings = new Setting[49];
+    private final BlockListSetting[] gridBlocks = new BlockListSetting[49];
+    private final WCheckbox[] uiCheckboxCache = new WCheckbox[49];
+
 
     public WallTrail(Category category) {
-        super(category, "WallTrail", "Builds a customizable 5x5 wall behind you as you walk.");
+        super(category, "WallTrail", "Builds a customizable 7x7 wall behind you as you walk.");
 
-        for (int i = 0; i < 25; i++) {
-            int row = (i / 5) + 1;
-            int col = (i % 5) + 1;
+        for (int i = 0; i < 49; i++) {
+            int row = (i / 7) + 1;
+            int col = (i % 7) + 1;
             String label = "R" + row + " C" + col;
 
             matrixSettings[i] = sgStorage.add(new BoolSetting.Builder()
@@ -114,14 +126,19 @@ public class WallTrail extends Module {
             );
         };
 
+
+        //--- Master Reset Button ---\\
         WButton masterReset = masterRow.add(theme.button("Reset")).widget();
         masterReset.action = () -> {
             this.masterOverride.reset();
             buildUIContents(theme, rootList);
             rootList.invalidate();
         };
+        //--- End Master button ---\\
 
-        rootList.add(theme.label("--- 5x5 Toggle Alignment Matrix ---"));
+
+    //--- 7x7 Grid Pattern Layout  ---\\
+        rootList.add(theme.label("--- 7x7 Toggle Alignment Matrix ---"));
 
         WHorizontalList buttonRow = rootList.add(theme.horizontalList()).widget();
         WButton resetBtn = buttonRow.add(theme.button("Reset (All True)")).widget();
@@ -142,22 +159,24 @@ public class WallTrail extends Module {
         };
 
         WTable table = rootList.add(theme.table()).widget();
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 49; i++) {
             final int index = i;
             uiCheckboxCache[index] = table.add(theme.checkbox(matrixSettings[index].get())).widget();
             uiCheckboxCache[index].action = () -> {
                 matrixSettings[index].set(uiCheckboxCache[index].checked);
             };
 
-            if ((i + 1) % 5 == 0) {
+            if ((i + 1) % 7 == 0) {
                 table.row();
             }
         }
 
-        rootList.add(theme.label("--- 5x5 Individual Block Grid Configuration ---"));
+
+        //--- 7x7 Grid Block Placement Layout  ---\\
+        rootList.add(theme.label("--- 7x7 Individual Block Grid Configuration ---"));
 
         WTable blockGridTable = rootList.add(theme.table()).widget();
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 49; i++) {
             final int index = i;
             WButton selectBlockBtn = blockGridTable.add(theme.button(getBlockButtonText(this.gridBlocks[index], "Select"))).widget();
             selectBlockBtn.action = () -> {
@@ -172,14 +191,17 @@ public class WallTrail extends Module {
                     }
                 );
             };
-            if ((i + 1) % 5 == 0) {
+            if ((i + 1) % 7 == 0) {
                 blockGridTable.row();
             }
         }
     }
+    //--- End 7x7 Grid Block Placement Layout  ---\\
+
+
 
     private void updateAllCheckboxes(boolean state) {
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 49; i++) {
             matrixSettings[i].set(state);
             if (uiCheckboxCache[i] != null) {
                 uiCheckboxCache[i].checked = state;
@@ -187,7 +209,7 @@ public class WallTrail extends Module {
         }
     }
 
-    // 2. This runs right before every movement calculation tick to force the game into walking forward
+    //--- 2. This runs right before every movement calculation tick to force the game into walking forward ---\\
     @EventHandler
     private void onTickPre(TickEvent.Pre event) {
         if (mc.options == null) return;
@@ -197,7 +219,8 @@ public class WallTrail extends Module {
         }
     }
 
-    // 3. This safely stops your character from sprinting off forever when you disable the module
+
+    //--- 3. This safely stops your character from sprinting off forever when you disable the module ---\\
     @Override
     public void onDeactivate() {
         if (mc.options != null && mc.options.forwardKey != null) {
@@ -214,9 +237,9 @@ public class WallTrail extends Module {
         Direction rightDir = playerDir.rotateYClockwise();
         BlockPos basePos = mc.player.getBlockPos().offset(playerDir.getOpposite());
 
-        for (int guiRow = 4; guiRow >= 0; guiRow--) {
-            for (int colIdx = 0; colIdx < 5; colIdx++) {
-                int i = (guiRow * 5) + colIdx;
+        for (int guiRow = 6; guiRow >= 0; guiRow--) {
+            for (int colIdx = 0; colIdx < 7; colIdx++) {
+                int i = (guiRow * 7) + colIdx;
 
                 if (!matrixSettings[i].get()) continue;
 
@@ -233,8 +256,8 @@ public class WallTrail extends Module {
 
                 if (targetedBlock == null || targetedBlock == Blocks.AIR) continue;
 
-                int rowOffset = 4 - guiRow;
-                int lateralOffset = colIdx - 2;
+                int rowOffset = 6 - guiRow;
+                int lateralOffset = colIdx - 3;
                 BlockPos targetPos = basePos.up(rowOffset).offset(rightDir, lateralOffset);
                 if (!mc.world.getBlockState(targetPos).isReplaceable()) continue;
                 final Block finalTargetBlock = targetedBlock;

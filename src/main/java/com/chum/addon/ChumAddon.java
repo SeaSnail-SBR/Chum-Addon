@@ -2,10 +2,7 @@ package com.chum.addon;
 
 import com.chum.addon.hud.ClockHud;
 import com.chum.addon.commands.CommandExample;
-import com.chum.addon.modules.AutoCampfire;
-import com.chum.addon.modules.BetterTracers;
-import com.chum.addon.modules.WallMiner;
-import com.chum.addon.modules.WallTrail;
+import com.chum.addon.modules.*;
 import com.mojang.logging.LogUtils;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
@@ -31,6 +28,9 @@ public class ChumAddon extends MeteorAddon {
             Modules.get().add(new BetterTracers(CATEGORY));
             Modules.get().add(new WallMiner(CATEGORY));
             Modules.get().add(new WallTrail(CATEGORY));
+            Modules.get().add(new XCarry(CATEGORY));
+            Modules.get().add(new SlowWalkSneak(CATEGORY));
+            Modules.get().add(new BlockDisguise(CATEGORY));
 
 
             // Commands \\

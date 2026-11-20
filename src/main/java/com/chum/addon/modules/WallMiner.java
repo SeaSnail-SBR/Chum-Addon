@@ -9,9 +9,7 @@ import meteordevelopment.meteorclient.gui.widgets.containers.WVerticalList;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WCheckbox;
 import meteordevelopment.meteorclient.renderer.ShapeMode;
-import meteordevelopment.meteorclient.settings.BoolSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
+import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
@@ -21,22 +19,19 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-
-
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
-import meteordevelopment.meteorclient.settings.ColorSetting;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
-
-
-
-
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 public class WallMiner extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgStorage = settings.createGroup("Matrix Storage");
 
+
+    //--- WALK TOGGLE ---\\
     private final Setting<Boolean> walkForward = sgGeneral.add(new BoolSetting.Builder()
         .name("walk-forward")
         .description("Automatically walks forward while mining.")
@@ -44,6 +39,8 @@ public class WallMiner extends Module {
         .build()
     );
 
+
+    //--- FAST BREAK TOGGLE ---\\
     private final Setting<Boolean> fastBreak = sgGeneral.add(new BoolSetting.Builder()
         .name("fast-break")
         .description("Instantly completes block destruction layers sequentially.")
@@ -51,6 +48,8 @@ public class WallMiner extends Module {
         .build()
     );
 
+
+    //--- DOUBLE MINE TOGGLE ---\\
     private final Setting<Boolean> doubleMine = sgGeneral.add(new BoolSetting.Builder()
         .name("double-mine")
         .description("Forces a concurrent split packet mine on a secondary target.")
@@ -59,8 +58,8 @@ public class WallMiner extends Module {
     );
 
 
-    //new color pallet\\
 
+    //new color pallet\\
     private final Setting<SettingColor> target1Color = sgGeneral.add(new ColorSetting.Builder()
         .name("target-1-color")
         .description("The color overlay for the primary mining target block.")
@@ -74,24 +73,42 @@ public class WallMiner extends Module {
         .defaultValue(new SettingColor(0, 0, 255, 75)) // Default Transparent Blue
         .build()
     );
-
-
     //end new color pallet\\
 
 
-    private final Setting<Boolean>[] matrixSettings = new Setting[25];
-    private final WCheckbox[] uiCheckboxCache = new WCheckbox[25];
+    // --- NEW SLIDER FOR DISTANCE AHEAD --- \\
+    private final Setting<Integer> maxDistanceAhead = sgGeneral.add(new IntSetting.Builder()
+        .name("distance-ahead")
+        .description("How many blocks ahead of you to mine the 7x7 grid.")
+        .defaultValue(3)
+        .min(1)
+        .max(7)
+        .sliderMin(1)
+        .sliderMax(7)
+        .build()
+    );
+// --- END SLIDER ADDITION --- \\
 
-    // Tracking variables to stop audio machine-gun spam
+
+
+    private final Setting<Boolean>[] matrixSettings = new Setting[49];
+    private final WCheckbox[] uiCheckboxCache = new WCheckbox[49];
+
+
+    //---* Tracking variables to stop audio machine-gun spam *---\\
     private BlockPos lastTarget1 = null;
     private BlockPos lastTarget2 = null;
+    //---* End Tracking variables to stop audio machine-gun spam *---\\
+
+
+
 
     public WallMiner(Category category) {
-        super(category, "wall-miner", "Digs a selectable 5x5 grid layout in front of you safely.");
+        super(category, "wall-miner", "Digs a selectable 7x7 grid layout in front of you.");
 
-        for (int i = 0; i < 25; i++) {
-            int row = (i / 5) + 1;
-            int col = (i % 5) + 1;
+        for (int i = 0; i < 49; i++) {
+            int row = (i / 7) + 1;
+            int col = (i % 7) + 1;
             String label = "R" + row + " C" + col;
 
             matrixSettings[i] = sgStorage.add(new BoolSetting.Builder()
@@ -109,7 +126,7 @@ public class WallMiner extends Module {
         WVerticalList list = theme.verticalList();
 
         list.add(theme.settings(settings));
-        list.add(theme.label("--- 5x5 Mining Grid Pattern ---"));
+        list.add(theme.label("--- 7x7 Mining Grid Pattern ---"));
 
         WHorizontalList buttonRow = list.add(theme.horizontalList()).widget();
 
@@ -121,14 +138,14 @@ public class WallMiner extends Module {
 
         WTable table = list.add(theme.table()).widget();
 
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 49; i++) {
             final int index = i;
             uiCheckboxCache[index] = table.add(theme.checkbox(matrixSettings[index].get())).widget();
             uiCheckboxCache[index].action = () -> {
                 matrixSettings[index].set(uiCheckboxCache[index].checked);
             };
 
-            if ((i + 1) % 5 == 0) {
+            if ((i + 1) % 7 == 0) {
                 table.row();
             }
         }
@@ -137,7 +154,7 @@ public class WallMiner extends Module {
     }
 
     private void updateAllCheckboxes(boolean state) {
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 49; i++) {
             matrixSettings[i].set(state);
             if (uiCheckboxCache[i] != null) {
                 uiCheckboxCache[i].checked = state;
@@ -203,7 +220,7 @@ public class WallMiner extends Module {
             Direction side = facing.getOpposite();
             BlockState state1 = mc.world.getBlockState(target1);
 
-            // Check if this is a brand new target block
+            // Check if this is a brand-new target block
             if (!target1.equals(lastTarget1)) {
                 // Send standard initialization
                 mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, target1, side));
@@ -252,8 +269,10 @@ public class WallMiner extends Module {
         }
 
 
-//updated \\
 
+
+
+//updated \\
         if (walkForward.get()) {
             long windowHandle = mc.getWindow().getHandle();
 
@@ -286,8 +305,10 @@ public class WallMiner extends Module {
     }
 //end update\\
 
-//new update - visual highlights\\
 
+
+
+//new update - visual highlights\\
     @EventHandler
     private void onRender3D(Render3DEvent event) {
         if (mc.world == null || mc.player == null) return;
@@ -326,11 +347,10 @@ public class WallMiner extends Module {
             event.renderer.box(target2, t2Color, t2Color, ShapeMode.Both, 0);
         }
     }
-
-
-
-
 //end new visual update\\
+
+
+
 
 
 
@@ -338,15 +358,25 @@ public class WallMiner extends Module {
         List<BlockPos> grid = new ArrayList<>();
         int rX = facing.getOffsetZ();
         int rZ = -facing.getOffsetX();
-        for (int distanceAhead = 1; distanceAhead <= 4; distanceAhead++) {
+
+
+
+
+        // --- NEW DISTANCE SLIDER --- \\
+        for (int distanceAhead = 1; distanceAhead <= maxDistanceAhead.get(); distanceAhead++) {
+       // --- END NEW DISTANCE SLIDER --- \\
+
+
+
+
             boolean blocksFoundInLayer = false;
-            for (int row = 0; row < 5; row++) {
-                for (int col = 0; col < 5; col++) {
-                    int index = (row * 5) + col;
+            for (int row = 0; row < 7; row++) {
+                for (int col = 0; col < 7; col++) {
+                    int index = (row * 7) + col;
 
                     if (matrixSettings[index].get()) {
-                        int hOffset = col - 2;
-                        int yOffset = 4 - row;
+                        int hOffset = col - 3;
+                        int yOffset = 6 - row;
                         int x = playerPos.getX() + (facing.getOffsetX() * distanceAhead) + (rX * hOffset);
                         int y = playerPos.getY() + yOffset;
                         int z = playerPos.getZ() + (facing.getOffsetZ() * distanceAhead) + (rZ * hOffset);
